@@ -1,0 +1,23 @@
+version: "2.4"
+
+x-log: &default-log
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+ timescaledb:
+    build: ./
+    image: hsz1273327/pg-allinone:latest-pg12-ts2.3.0
+    mem_limit: 2g
+    restart: on-failure
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      # - "/volume2/docker_deploy/storage/postgres/data:/var/lib/postgresql/data"
+      - "./pgdata:/var/lib/postgresql/data"
+    logging:
+      <<: *default-log
+    command: ["-c", "max_connections=300"]
