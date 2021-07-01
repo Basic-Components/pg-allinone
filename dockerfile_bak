@@ -1,0 +1,51 @@
+FROM --platform=$TARGETPLATFORM timescale/timescaledb-postgis:2.3.0-pg12
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+RUN apk update && \
+    apk --no-cache add build-base \
+    git \
+    make \
+    cmake \
+    autoconf \
+    rm -rf /var/cache/apk/* 
+# 安装jieba分词
+WORKDIR /plugins
+RUN git clone https://github.com/jaiminpan/pg_jieba
+WORKDIR /plugins/pg_jieba
+RUN git submodule update --init --recursive
+RUN mkdir build
+WORKDIR /plugins/pg_jieba/build
+RUN cmake ..
+RUN make
+RUN make install
+
+# 安装arrow
+ARG ARROW_VERSION=0.17.1
+WORKDIR /plugins
+RUN git clone -b apache-arrow-${ARROW_VERSION} https://github.com/apache/arrow.git
+WORKDIR /plugins/arrow/cpp
+RUN mkdir release
+WORKDIR /plugins/arrow/cpp/release
+
+ENV ARROW_BUILD_TYPE=release
+ENV ARROW_HOME=/usr/local
+ENV PARQUET_HOME=/usr/local
+RUN cmake \
+    -DARROW_OPTIONAL_INSTALL=ON \
+    -DARROW_PARQUET=ON \
+    -DARROW_BUILD_TESTS=OFF \
+    ..
+RUN make arrow
+RUN make parquet
+RUN make install
+
+# 安装parquet_fdw
+# ARG PARQUET_FDW_VERSION=0.2
+WORKDIR /plugins
+# RUN git clone -b v${PARQUET_FDW_VERSION} https://github.com/adjust/parquet_fdw.git
+RUN git clone https://github.com/adjust/parquet_fdw.git
+WORKDIR /plugins/parquet_fdw
+RUN make install
+
+# 删除插件源码包
+WORKDIR /
+RUN rm -rf /plugins
