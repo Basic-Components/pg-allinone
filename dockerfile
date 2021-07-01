@@ -9,7 +9,7 @@ RUN apk update && \
     rm -rf /var/cache/apk/* 
 # 安装jieba分词
 WORKDIR /plugins
-RUN git clone https://github.com/jaiminpan/pg_jieba
+RUN git clone -b 2d1b06b0e74c06a6ad47f301ade81bdc49b5dcce https://github.com/jaiminpan/pg_jieba
 WORKDIR /plugins/pg_jieba
 RUN git submodule update --init --recursive
 RUN mkdir build
