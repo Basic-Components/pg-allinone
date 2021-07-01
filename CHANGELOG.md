@@ -1,0 +1,11 @@
+# v0.0.0
+
+构建了项目
+
+## 基镜像信息
+
++ 基镜像: [timescale/timescaledb-postgis:2.3.0-pg12](https://hub.docker.com/layers/timescale/timescaledb-postgis/2.3.0-pg12/images/sha256-7758704d4a1482f64178b3ec545a2a12111087a6b5b50ae2b9a091c2d529888c?context=explore)
+
+## 安装插件
+
++ [pg_jeba@2d1b06b0e74c06a6ad47f301ade81bdc49b5dcce](https://github.com/jaiminpan/pg_jieba/tree/2d1b06b0e74c06a6ad47f301ade81bdc49b5dcce)
