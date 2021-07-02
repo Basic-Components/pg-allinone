@@ -7,7 +7,6 @@ x-log: &default-log
 
 services:
  timescaledb:
-    build: ./
     image: hsz1273327/pg-allinone:latest-pg12-ts2.3.0
     mem_limit: 2g
     restart: on-failure
