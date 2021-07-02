@@ -1,7 +1,7 @@
 # pg-allinone
 
 + author: hsz
-+ version: 0.0.0
++ version: 0.0.1
 
 安装了各种实用插件的pg镜像.
 
