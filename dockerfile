@@ -1,4 +1,4 @@
-FROM --platform=$TARGETPLATFORM timescale/timescaledb-postgis:2.3.0-pg12 as build_jieba
+FROM --platform=$TARGETPLATFORM timescale/timescaledb-postgis:2.3.1-pg12 as build_jieba
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
 RUN apk update && \
     apk --no-cache add build-base \
