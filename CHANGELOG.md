@@ -1,3 +1,23 @@
+# v0.0.3
+
+## 新增插件
+
++ lppython3
++ ltree_plpython3
++ jsonb_plpython3
++ hstore_plpython3
+
+## 增加python依赖
+
++ requests
++ python-snappy
++ crc32c
++ lz4
++ kafka-python
++ redis
++ clickhouse_driver
++ pika
+
 # v0.0.2
 
 ## 新增插件

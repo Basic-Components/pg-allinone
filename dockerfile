@@ -217,6 +217,21 @@ COPY  --from=postgres:11-alpine /usr/local/share/postgresql/extension/plpython3u
 #COPY docker-entrypoint-initdb.d/create-extension-jieba.sql /docker-entrypoint-initdb.d/00-create-extension-jieba.sql
 COPY docker-entrypoint-initdb.d/create-extension-postgis.sql /docker-entrypoint-initdb.d/00-create-extension-postgis.sql
 
+RUN set -ex \
+    && apk add --no-cache \
+    snappy-dev \
+    python3-dev \
+    py3-pip
+
+RUN python3 -m pip install requests
+RUN python3 -m pip install python-snappy
+RUN python3 -m pip install crc32c
+RUN python3 -m pip install lz4
+RUN python3 -m pip install kafka-python
+RUN python3 -m pip install redis
+RUN python3 -m pip install clickhouse_driver
+RUN python3 -m pip install pika
+
 RUN mkdir /tmp/stat_temporary
 RUN chmod 777 -R /tmp/stat_temporary
 # ENTRYPOINT ["postgres", "-c", "shared_preload_libraries=age"]
