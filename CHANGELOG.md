@@ -1,3 +1,13 @@
+# v0.0.4
+
+## 增加python依赖
+
++ numpy
++ pandas
++ pyarrow
++ cython
++ fastparquet
+
 # v0.0.3
 
 ## 新增插件

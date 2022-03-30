@@ -221,16 +221,23 @@ RUN set -ex \
     && apk add --no-cache \
     snappy-dev \
     python3-dev \
-    py3-pip
+    py3-pip \
+    cython \
+    py3-numpy \
+    py3-pandas \
+    cargo
 
-RUN python3 -m pip install requests
-RUN python3 -m pip install python-snappy
-RUN python3 -m pip install crc32c
-RUN python3 -m pip install lz4
-RUN python3 -m pip install kafka-python
-RUN python3 -m pip install redis
-RUN python3 -m pip install clickhouse_driver
-RUN python3 -m pip install pika
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir wheel
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir requests
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir python-snappy
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir crc32c
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir lz4
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir kafka-python
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir redis
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir clickhouse_driver
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir pika
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir cramjam
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir fastparquet==0.8.0
 
 RUN mkdir /tmp/stat_temporary
 RUN chmod 777 -R /tmp/stat_temporary

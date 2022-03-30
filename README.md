@@ -3,7 +3,7 @@
 + author: hsz
 + version: 0.0.1
 
-安装了各种实用插件的pg镜像.
+安装了各种实用插件的pg镜像.该项目针对oltp场景,只考虑单节点和主备高可用部署场景
 
 ## 环境介绍
 
@@ -17,3 +17,6 @@
 + [apache-age](https://age.apache.org/docs/master/intro/operators.html)用于作为图数据库
 + [postgis](https://github.com/postgis/postgis)用于做地理空间数据计算(自带)
 + [pg_jeba](https://github.com/jaiminpan/pg_jieba)用于中文分词
+
+alpine-sdk \
+llvm11-dev
