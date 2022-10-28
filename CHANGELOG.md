@@ -4,9 +4,11 @@
 
 + numpy
 + pandas
-+ pyarrow
 + cython
-+ fastparquet
+
+## 版本变化
+
++ `incubator-age`0.7.0 -> v1.1.0-rc0
 
 # v0.0.3
 
