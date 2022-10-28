@@ -114,7 +114,7 @@ COPY  --from=postgres:11-alpine /usr/local/share/postgresql/extension/plpython3u
 COPY  --from=postgres:11-alpine /usr/local/share/postgresql/extension/plpython3u--unpackaged--1.0.sql  /usr/local/share/postgresql/extension/plpython3u--unpackaged--1.0.sql
 COPY  --from=postgres:11-alpine /usr/local/share/postgresql/extension/plpython3u.control  /usr/local/share/postgresql/extension/plpython3u.control
 
-COPY docker-entrypoint-initdb.d/create-extension-postgis.sql /docker-entrypoint-initdb.d/00-create-extension-postgis.sql
+COPY docker-entrypoint-initdb.d.src/create-extension-postgis.sql /docker-entrypoint-initdb.d/00-create-extension-postgis.sql
 
 RUN set -ex \
     && apk add --no-cache \
