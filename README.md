@@ -7,11 +7,6 @@
 
 ## 对应镜像分支
 
-+ hsz1273327/pg-allinone:0.0.4
-+ hsz1273327/pg-allinone:latest
-+ hsz1273327/pg-allinone:pg11-ts
-+ hsz1273327/pg-allinone:pg11-ts2.3.1-age0.7.0-postgis3.1.0
-
 + hsz1273327/pg-allinone:pg11-latest
 + hsz1273327/pg-allinone:pg11-0.0.4
 
