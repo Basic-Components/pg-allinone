@@ -1,14 +1,14 @@
 # pg-allinone
 
 + author: hsz
-+ version: pg11-0.0.4
++ version: pg12-0.0.4
 
 安装了各种实用插件的pg镜像.该项目针对oltp场景,只考虑单节点和主备高可用部署场景
 
 ## 对应镜像分支
 
-+ hsz1273327/pg-allinone:pg11-latest
-+ hsz1273327/pg-allinone:pg11-0.0.4
++ hsz1273327/pg-allinone:pg12_latest
++ hsz1273327/pg-allinone:pg12_0.0.4
 
 ## 环境介绍
 
@@ -35,3 +35,4 @@
     + redis
     + clickhouse_driver
     + pika
+    + pyarrow

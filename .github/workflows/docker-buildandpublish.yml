@@ -11,18 +11,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - uses: jungwinter/split@v2
+      - name: SplitTag
+        uses: jungwinter/split@v2
         id: split
         with:
           msg: '${GITHUB_REF_NAME}'
-          separator: '-'
+          separator: _
 
       - name: Prepare
         id: prep
         run: |
           DOCKER_IMAGE=hsz1273327/pg-allinone
           VERSION_FULL="${GITHUB_REF_NAME}"
-          VERSION_LATEST="${{ steps.split.outputs._0 }}-latest"
+          VERSION_LATEST="${{ steps.split.outputs._0 }}_latest"
           TAGS="${DOCKER_IMAGE}:${VERSION_FULL},${DOCKER_IMAGE}:${VERSION_LATEST}"
           # Set output parameters.
           echo ::set-output name=tags::${TAGS}
