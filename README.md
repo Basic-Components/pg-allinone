@@ -35,3 +35,44 @@
     + redis
     + clickhouse_driver
     + pika
+
+## 使用与场景
+
+本项目构造的镜像是以在本地而非云端使用为前提的.如果在云端要用pg建议还是直接购买服务商的对应服务.
+
+请在不同的场景下使用不同的配置单独使用,不要所有场景混在一起使用,很容易因为无法兼顾各种要求拖累业务需求.pg只是适用场景丰富,不是银弹.
+
+### OLTP
+
+OLTP场景下推荐的面向业务,根据需要使用对应的特性.也不要盲目追求集群化.多数时候业务量不够时集群化是鸡肋
+
+#### 单节点
+
+1. age用于支持图数据
+2. postgis用于支持地理数据
+3. pg_jeba用于中文分词
+4. 使用python3配合timescaledb的User-defined actions通过clickhouse_driver定时落库数据到clickhouse
+5. 使用python3配合timescaledb的User-defined actions通过pandas,csv,json,等配合boto3向s3接口(包括minio)中写入文件落库.
+
+### 集群
+
+暂无
+
+## HTAP
+
+HTAP场景下依然建议悠着点使用,不用盲目上集群.HTAP场景下更多的是计算密集型任务,不要直接对接业务,起码中间要有个缓存层避免让pg负载过重
+
+### 单节点
+
+1. timescaledb用于支持时序数据
+2. 使用python3配合timescaledb的User-defined actions通过kafka-python,向kafka中定时发送事件
+3. 使用python3配合timescaledb的User-defined actions通过redis-py,向redis中定时写入缓存或者publish消息
+4. 使用python3配合timescaledb的User-defined actions通过pika,向rabbitmq中定时发送消息
+
+### 集群
+
+1. 可用于组timescaledb集群
+
+## OLAP
+
+暂无支持

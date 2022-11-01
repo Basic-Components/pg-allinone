@@ -5,6 +5,7 @@
 + numpy
 + pandas
 + cython
++ boto3
 
 ## 版本变化
 
