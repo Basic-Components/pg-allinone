@@ -7,8 +7,8 @@
 
 ## 对应镜像分支
 
-+ hsz1273327/pg-allinone:pg12_latest
-+ hsz1273327/pg-allinone:pg12_0.0.4
++ hsz1273327/pg-allinone:pg12-latest
++ hsz1273327/pg-allinone:pg12-0.0.4
 
 ## 环境介绍
 
