@@ -24,10 +24,10 @@ jobs:
           DOCKER_IMAGE=hsz1273327/pg-allinone
           VERSION_FULL="${{ github.ref_name }}"
           VERSION_LATEST="${{ steps.split.outputs._0 }}-latest"
-          TAGS="${ DOCKER_IMAGE }:${ VERSION_FULL },${ DOCKER_IMAGE }:${ VERSION_LATEST }"
+          TAGS="${DOCKER_IMAGE}:${VERSION_FULL},${DOCKER_IMAGE}:${VERSION_LATEST}"
           # Set output parameters.
-          echo ::set-output name=tags::${ TAGS }
-          echo ::set-output name=docker_image::${ DOCKER_IMAGE }
+          echo ::set-output name=tags::${TAGS}
+          echo ::set-output name=docker_image::${DOCKER_IMAGE}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@master
