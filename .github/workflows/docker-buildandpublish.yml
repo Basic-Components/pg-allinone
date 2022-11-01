@@ -12,7 +12,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: SplitTag
-      - uses: jungwinter/split@v2
+        uses: jungwinter/split@v2
         id: split
         with:
           msg: ${{ GITHUB_REF_NAME }}
