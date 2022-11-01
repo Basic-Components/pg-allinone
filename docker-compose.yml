@@ -7,7 +7,7 @@ x-log: &default-log
 
 services:
   pg:
-    image: hsz1273327/pg-allinone:pg12_0.0.4
+    image: hsz1273327/pg-allinone:pg12-0.0.4
     mem_limit: 2g
     ports:
       - "5434:5432"
