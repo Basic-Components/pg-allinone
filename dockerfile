@@ -115,7 +115,11 @@ COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/plpython3u
 COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/plpython3u--unpackaged--1.0.sql  /usr/local/share/postgresql/extension/plpython3u--unpackaged--1.0.sql
 COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/plpython3u.control  /usr/local/share/postgresql/extension/plpython3u.control
 
+# 提前加载
 COPY docker-entrypoint-initdb.d.src/create-extension-postgis.sql /docker-entrypoint-initdb.d/00-create-extension-postgis.sql
+COPY docker-entrypoint-initdb.d.src/create-extension-age.sql /docker-entrypoint-initdb.d/00-create-extension-age.sql
+COPY docker-entrypoint-initdb.d.src/create-extension-jieba.sql /docker-entrypoint-initdb.d/00-create-extension-jieba.sql
+COPY docker-entrypoint-initdb.d.src/create-extension-py.sql  /docker-entrypoint-initdb.d/00-create-extension-py.sql
 
 RUN set -ex \
     && apk add --no-cache \
@@ -136,7 +140,7 @@ RUN python3 -m pip install --no-cache-dir kafka-python
 RUN python3 -m pip install --no-cache-dir redis
 RUN python3 -m pip install --no-cache-dir clickhouse_driver
 RUN python3 -m pip install --no-cache-dir pika
-
+RUN python3 -m pip install --no-cache-dir boto3
 
 RUN mkdir /tmp/stat_temporary
 RUN chmod 777 -R /tmp/stat_temporary

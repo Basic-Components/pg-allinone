@@ -6,16 +6,70 @@ x-log: &default-log
     max-file: "3"
 
 services:
- pg:
-    image: postgres:11-alpine
+  pg:
+    image: hsz1273327/pg-allinone:pg12_0.0.4
     mem_limit: 2g
     ports:
       - "5434:5432"
     environment:
       POSTGRES_PASSWORD: postgres
-    # volumes:
-    #   # - "/volume2/docker_deploy/storage/postgres/data:/var/lib/postgresql/data"
-    #   - "./pgdata:/var/lib/postgresql/data"
+    volumes:
+      # - "/volume2/docker_deploy/storage/postgres/data:/var/lib/postgresql/data"
+      - "./pgdata:/var/lib/postgresql/data"
     logging:
       <<: *default-log
     command: ["-c", "max_connections=300"]
+
+  kafka1:
+    image: bitnami/kafka:3.3.1
+    logging:
+      options:
+        max-file: 3
+        max-size: 10m
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_BROKER_ID=1
+      - KAFKA_KRAFT_CLUSTER_ID=V5t6x-LERXi-eUBdy_vacg
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@127.0.0.1:9093
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_HEAP_OPTS=-Xmx512M -Xms512M
+    volumes:
+      - "./kafka/data:/bitnami"
+
+  minio:
+    image: minio/minio:RELEASE.2022-10-29T06-21-33Z
+    logging:
+      options:
+        max-file: 3
+        max-size: 10m
+    ports:
+      - 9000:9000
+      - 9001:9001
+    volumes:
+      - ./minio/data:/data
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=admin1234
+    command:
+      - server
+      - /data
+      - --console-address
+      - ":9001"
+
+  redis:
+    image: hsz1273327/redis-allinone:1.2.0
+    mem_limit: 2g
+    ports:
+      - "6379:6379"
+    volumes:
+      - "./redis/data:/data"
+    logging:
+      <<: *default-log

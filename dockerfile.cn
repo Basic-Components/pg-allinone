@@ -214,9 +214,11 @@ COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/plpython3u
 COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/plpython3u--unpackaged--1.0.sql  /usr/local/share/postgresql/extension/plpython3u--unpackaged--1.0.sql
 COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/plpython3u.control  /usr/local/share/postgresql/extension/plpython3u.control
 
-#COPY docker-entrypoint-initdb.d/create-extension-age.sql /docker-entrypoint-initdb.d/00-create-extension-age.sql
-#COPY docker-entrypoint-initdb.d/create-extension-jieba.sql /docker-entrypoint-initdb.d/00-create-extension-jieba.sql
+
 COPY docker-entrypoint-initdb.d.src/create-extension-postgis.sql /docker-entrypoint-initdb.d/00-create-extension-postgis.sql
+COPY docker-entrypoint-initdb.d.src/create-extension-age.sql /docker-entrypoint-initdb.d/00-create-extension-age.sql
+COPY docker-entrypoint-initdb.d.src/create-extension-jieba.sql /docker-entrypoint-initdb.d/00-create-extension-jieba.sql
+COPY docker-entrypoint-initdb.d.src/create-extension-py.sql  /docker-entrypoint-initdb.d/00-create-extension-py.sql
 
 RUN set -ex \
     && apk add --no-cache \
@@ -227,13 +229,6 @@ RUN set -ex \
     py3-numpy \
     py3-pandas \
     py3-apache-arrow
-    # cmake
-    #cargo
-# RUN echo "@edgecommunity https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
-# RUN apk update --allow-untrusted
-# RUN set -ex \
-#     && apk add --no-cache --allow-untrusted \
-#     py3-apache-arrow@edgecommunity
 
 RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir wheel
 RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir requests
@@ -244,11 +239,8 @@ RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cach
 RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir redis
 RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir clickhouse_driver
 RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir pika
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir boto3
 
-# RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir pyarrow
-# RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir cramjam
-# RUN python3 -m pip install --no-cache-dir --upgrade cramjam
-# RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir fastparquet==0.8.0
 
 
 RUN mkdir /tmp/stat_temporary
