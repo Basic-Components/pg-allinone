@@ -7,7 +7,7 @@ x-log: &default-log
 
 services:
   pg:
-    image: hsz1273327/pg-allinone:pg11-0.0.4
+    image: hsz1273327/pg-allinone:pg11-0.0.5-preview
     mem_limit: 2g
     ports:
       - "5434:5432"
@@ -65,7 +65,7 @@ services:
       - ":9001"
 
   redis:
-    image: hsz1273327/redis-allinone:1.2.0
+    image: hsz1273327/redis-allinone:redis7-1.2.1
     mem_limit: 2g
     ports:
       - "6379:6379"

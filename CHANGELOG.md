@@ -1,3 +1,10 @@
+# pg11-0.0.5
+
+## 增加fdw
+
++ parquet_s3_fdw
++ kafka_fdw
+
 # pg11-0.0.4
 
 ## 增加python依赖

@@ -31,3 +31,6 @@
 *.out
 *.app
 pgdata
+kafka
+minio
+redis

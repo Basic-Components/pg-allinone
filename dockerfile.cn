@@ -150,6 +150,8 @@ RUN set -ex \
 
 RUN set -ex \
     && apk add --no-cache --repository http://nl.alpinelinux.org/alpine/v3.14/main \
+    # && apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/v3.14/main \
+    # && apk add --no-cache --repository http://mirrors.tuna.tsinghua.edu.cn/alpine/v3.14/main \
     geos \
     gdal \
     proj \
@@ -164,6 +166,7 @@ RUN set -ex \
     json-c-dev \
     gcc g++ \
     make
+
 RUN cd /tmp \
     && wget http://download.osgeo.org/postgis/source/postgis-${POSTGIS_VERSION}.tar.gz -O - | tar -xz \
     && chown root:root -R postgis-${POSTGIS_VERSION} \
@@ -177,6 +180,8 @@ RUN cd /tmp \
     json-c \
     && cd / \
     && rm -rf /tmp/postgis-${POSTGIS_VERSION}
+
+
 # && apk del .fetch-deps .build-deps
 # Build docker-agensgraph-extension-alpine
 RUN cd /tmp \
@@ -186,6 +191,20 @@ RUN cd /tmp \
     && make install
 # COPY /tmp/age/docker-entrypoint-initdb.d/00-create-extension-age.sql /docker-entrypoint-initdb.d/00-create-extension-age.sql
 RUN cd / && rm -rf /tmp/age
+
+RUN git config --global http.version HTTP/1.1
+
+# kafka_fdw
+RUN set -ex \
+    && apk add --no-cache \
+    librdkafka-dev
+
+RUN cd /tmp \
+    && git clone  https://github.com/adjust/kafka_fdw.git /tmp/kafka_fdw \
+    && cd /tmp/kafka_fdw \
+    make && make install
+RUN cd / && rm -rf /tmp/kafka_fdw
+    
 
 COPY --from=build_jieba /usr/local/lib/postgresql/pg_jieba.so /usr/local/lib/postgresql/pg_jieba.so 
 COPY --from=build_jieba /usr/local/share/postgresql/extension/pg_jieba.control /usr/local/share/postgresql/extension/pg_jieba.control
@@ -218,6 +237,7 @@ COPY docker-entrypoint-initdb.d.src/create-extension-postgis.sql /docker-entrypo
 COPY docker-entrypoint-initdb.d.src/create-extension-age.sql /docker-entrypoint-initdb.d/00-create-extension-age.sql
 COPY docker-entrypoint-initdb.d.src/create-extension-jieba.sql /docker-entrypoint-initdb.d/00-create-extension-jieba.sql
 COPY docker-entrypoint-initdb.d.src/create-extension-py.sql  /docker-entrypoint-initdb.d/00-create-extension-py.sql
+# COPY docker-entrypoint-initdb.d.src/create-extension-kafka_fdw.sql  /docker-entrypoint-initdb.d/00-create-extension-kafka_fdw.sql
 
 RUN set -ex \
     && apk add --no-cache \
