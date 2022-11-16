@@ -45,8 +45,6 @@
 
 tests文件夹提供了供测试使用的SQL脚本和进入容器的语句.
 
-
-
 ## 使用与场景
 
 本项目构造的镜像是以在本地而非云端使用为前提的.如果在云端要用pg建议还是直接购买服务商的对应服务.
@@ -86,11 +84,8 @@ HTAP场景下依然建议悠着点使用,不用盲目上集群.HTAP场景下更�
 
 ## OLAP
 
-暂无支持
+1. 使用parquet_s3_fdw可以用于读取存放在s3接口中的数据并进行并行化处理
 
+## 数据调试
 
-s3 = boto3.client('s3',
-                  endpoint_url='http://localhost:9000',
-                  aws_access_key_id='admin',
-                  aws_secret_access_key='admin1234',
-                  region_name='us-east-1')
++ 使用kafka_fdw可以用于kafka中数据的调试

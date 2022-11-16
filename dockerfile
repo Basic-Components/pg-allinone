@@ -159,22 +159,22 @@ COPY --from=build_jieba /usr/local/share/postgresql/tsearch_data/jieba_base.dict
 COPY --from=build_jieba /usr/local/share/postgresql/tsearch_data/jieba_hmm.model /usr/local/share/postgresql/tsearch_data/jieba_hmm.model
 COPY --from=build_jieba /usr/local/share/postgresql/tsearch_data/jieba_user.dict /usr/local/share/postgresql/tsearch_data/jieba_user.dict
 
-COPY  --from=postgres:12-alpine /usr/local/lib/postgresql/hstore_plpython3.so /usr/local/lib/postgresql/hstore_plpython3.so
-COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/hstore_plpython3u--1.0.sql  /usr/local/share/postgresql/extension/hstore_plpython3u--1.0.sql
-COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/hstore_plpython3u.control  /usr/local/share/postgresql/extension/hstore_plpython3u.control
+COPY  --from=postgres:12.11-alpine3.16 /usr/local/lib/postgresql/hstore_plpython3.so /usr/local/lib/postgresql/hstore_plpython3.so
+COPY  --from=postgres:12.11-alpine3.16 /usr/local/share/postgresql/extension/hstore_plpython3u--1.0.sql  /usr/local/share/postgresql/extension/hstore_plpython3u--1.0.sql
+COPY  --from=postgres:12.11-alpine3.16 /usr/local/share/postgresql/extension/hstore_plpython3u.control  /usr/local/share/postgresql/extension/hstore_plpython3u.control
 
-COPY  --from=postgres:12-alpine /usr/local/lib/postgresql/jsonb_plpython3.so /usr/local/lib/postgresql/jsonb_plpython3.so
-COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/jsonb_plpython3u--1.0.sql  /usr/local/share/postgresql/extension/jsonb_plpython3u--1.0.sql
-COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/jsonb_plpython3u.control  /usr/local/share/postgresql/extension/jsonb_plpython3u.control
+COPY  --from=postgres:12.11-alpine3.16 /usr/local/lib/postgresql/jsonb_plpython3.so /usr/local/lib/postgresql/jsonb_plpython3.so
+COPY  --from=postgres:12.11-alpine3.16 /usr/local/share/postgresql/extension/jsonb_plpython3u--1.0.sql  /usr/local/share/postgresql/extension/jsonb_plpython3u--1.0.sql
+COPY  --from=postgres:12.11-alpine3.16 /usr/local/share/postgresql/extension/jsonb_plpython3u.control  /usr/local/share/postgresql/extension/jsonb_plpython3u.control
 
-COPY  --from=postgres:12-alpine /usr/local/lib/postgresql/ltree_plpython3.so /usr/local/lib/postgresql/ltree_plpython3.so
-COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/ltree_plpython3u--1.0.sql  /usr/local/share/postgresql/extension/ltree_plpython3u--1.0.sql
-COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/ltree_plpython3u.control /usr/local/share/postgresql/extension/ltree_plpython3u.control
+COPY  --from=postgres:12.11-alpine3.16 /usr/local/lib/postgresql/ltree_plpython3.so /usr/local/lib/postgresql/ltree_plpython3.so
+COPY  --from=postgres:12.11-alpine3.16 /usr/local/share/postgresql/extension/ltree_plpython3u--1.0.sql  /usr/local/share/postgresql/extension/ltree_plpython3u--1.0.sql
+COPY  --from=postgres:12.11-alpine3.16 /usr/local/share/postgresql/extension/ltree_plpython3u.control /usr/local/share/postgresql/extension/ltree_plpython3u.control
 
-COPY  --from=postgres:12-alpine /usr/local/lib/postgresql/plpython3.so /usr/local/lib/postgresql/plpython3.so
-COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/plpython3u--1.0.sql  /usr/local/share/postgresql/extension/plpython3u--1.0.sql
-COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/plpython3u--unpackaged--1.0.sql  /usr/local/share/postgresql/extension/plpython3u--unpackaged--1.0.sql
-COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/plpython3u.control  /usr/local/share/postgresql/extension/plpython3u.control
+COPY  --from=postgres:12.11-alpine3.16 /usr/local/lib/postgresql/plpython3.so /usr/local/lib/postgresql/plpython3.so
+COPY  --from=postgres:12.11-alpine3.16 /usr/local/share/postgresql/extension/plpython3u--1.0.sql  /usr/local/share/postgresql/extension/plpython3u--1.0.sql
+COPY  --from=postgres:12.11-alpine3.16 /usr/local/share/postgresql/extension/plpython3u--unpackaged--1.0.sql  /usr/local/share/postgresql/extension/plpython3u--unpackaged--1.0.sql
+COPY  --from=postgres:12.11-alpine3.16 /usr/local/share/postgresql/extension/plpython3u.control  /usr/local/share/postgresql/extension/plpython3u.control
 
 # 扩展启动加载
 COPY docker-entrypoint-initdb.d.src/create-extension-postgis.sql /docker-entrypoint-initdb.d/00-create-extension-postgis.sql
