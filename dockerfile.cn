@@ -220,6 +220,7 @@ COPY docker-entrypoint-initdb.d.src/create-extension-age.sql /docker-entrypoint-
 COPY docker-entrypoint-initdb.d.src/create-extension-jieba.sql /docker-entrypoint-initdb.d/00-create-extension-jieba.sql
 COPY docker-entrypoint-initdb.d.src/create-extension-py.sql  /docker-entrypoint-initdb.d/00-create-extension-py.sql
 
+
 RUN set -ex \
     && apk add --no-cache \
     snappy-dev \
@@ -242,6 +243,58 @@ RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cach
 RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir boto3
 
 
+### update ###
+RUN set -ex \
+    && apk add --no-cache \
+    curl-dev \
+    zlib-dev \
+    openssl-dev \
+    nghttp2-static \
+    boost-dev \
+    cmake
+ #    build-base \
+
+RUN git config --global http.version HTTP/1.1
+# parquet_s3_fdw
+## aws 1.9.334可以测
+RUN cd /tmp \
+    && git clone --recurse-submodules -b '1.9.379' https://github.com/aws/aws-sdk-cpp.git /tmp/aws-sdk-cpp \
+    && cd /tmp/aws-sdk-cpp \
+    && mkdir build && cd build \
+    && cmake .. \
+        -DBUILD_ONLY="core;s3" \
+        -DCMAKE_BUILD_TYPE=Release \
+        # -DBUILD_SHARED_LIBS=OFF \
+        -DCUSTOM_MEMORY_MANAGEMENT=OFF \
+        -DENABLE_TESTING=OFF \
+        -DENABLE_UNITY_BUILD=ON && \
+    make && make install
+# RUN cd / && rm -rf /tmp/aws-sdk-cpp
+
+RUN set -ex \
+    && apk add --no-cache \
+    apache-arrow-dev
+
+## parquet_s3_fdw
+RUN cd /tmp \
+    && git clone  -b 'v0.3.0' https://github.com/pgspider/parquet_s3_fdw.git /tmp/parquet_s3_fdw \
+    && cd /tmp/parquet_s3_fdw \
+    make install USE_PGXS=1
+# RUN cd / && rm -rf /tmp/parquet_s3_fdw
+
+# kafka_fdw
+RUN set -ex \
+    && apk add --no-cache \
+    librdkafka-dev
+
+RUN cd /tmp \
+    && git clone  https://github.com/adjust/kafka_fdw.git /tmp/kafka_fdw \
+    && cd /tmp/kafka_fdw \
+    make && make install
+# RUN cd / && rm -rf /tmp/kafka_fdw
+
+# COPY docker-entrypoint-initdb.d.src/create-extension-parquet_s3_fdw.sql  /docker-entrypoint-initdb.d/00-create-extension-parquet_s3_fdw.sql
+COPY docker-entrypoint-initdb.d.src/create-extension-kafka_fdw.sql  /docker-entrypoint-initdb.d/00-create-extension-kafka_fdw.sql
 
 RUN mkdir /tmp/stat_temporary
 RUN chmod 777 -R /tmp/stat_temporary

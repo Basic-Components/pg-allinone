@@ -2,6 +2,7 @@
 # build jieba
 ############################
 FROM --platform=$TARGETPLATFORM timescale/timescaledb:2.8.1-pg12 as build_jieba
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
 RUN apk update && \
     apk --no-cache add build-base \
     git \
@@ -26,18 +27,14 @@ RUN make install
 # Now build image and copy in tools
 ############################
 FROM --platform=$TARGETPLATFORM timescale/timescaledb:2.8.1-pg12
-
-# ARG POSTGIS_VERSION=3.1.0
 ARG POSTGIS_VERSION=3.3.1
-# ARG GDAL_VERSION=3.2.1
-# ARG PROJ_VERSION=7.2.1
 
-######POSTGIS SECTION
-#Build POSTGIS
+# 安装依赖
 ENV POSTGIS_VERSION ${POSTGIS_VERSION}
 RUN set -ex \
     && apk add --no-cache \
     ca-certificates \
+    openssl-dev \
     openssl \
     tar \
     bison \
@@ -45,7 +42,22 @@ RUN set -ex \
     clang \
     git \
     llvm \
-    python3
+    snappy-dev \
+    apache-arrow-dev \
+    librdkafka-dev \
+    python3 \
+    python3-dev \
+    py3-pip \
+    cython \
+    py3-numpy \
+    py3-pandas \
+    py3-apache-arrow \
+    curl-dev \
+    zlib-dev \
+    nghttp2-static \
+    boost-dev \
+    cmake
+
 
 RUN set -ex \
     && apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/v3.12/main \
@@ -67,6 +79,11 @@ RUN set -ex \
     json-c-dev \
     gcc g++ \
     make
+
+# git设置
+RUN git config --global http.version HTTP/1.1
+
+# postgis
 RUN cd /tmp \
     && wget http://download.osgeo.org/postgis/source/postgis-${POSTGIS_VERSION}.tar.gz -O - | tar -xz \
     && chown root:root -R postgis-${POSTGIS_VERSION} \
@@ -81,14 +98,58 @@ RUN cd /tmp \
     && cd / \
     && rm -rf /tmp/postgis-${POSTGIS_VERSION}
 
-# Build docker-agensgraph-extension-alpine
+# age
 RUN cd /tmp \
+    # && git clone -b 'release/0.7.0' https://github.com/apache/incubator-age /tmp/age \
     && git clone -b 'PG12/v1.1.0-rc0' https://github.com/apache/age.git /tmp/age \
     && cd /tmp/age \
     && make install
-
+# COPY /tmp/age/docker-entrypoint-initdb.d/00-create-extension-age.sql /docker-entrypoint-initdb.d/00-create-extension-age.sql
 RUN cd / && rm -rf /tmp/age
 
+# parquet_s3_fdw
+## aws 1.9.334可以测
+RUN cd /tmp \
+    && git clone --recurse-submodules -b '1.9.379' https://github.com/aws/aws-sdk-cpp.git /tmp/aws-sdk-cpp \
+    && cd /tmp/aws-sdk-cpp \
+    && mkdir build && cd build \
+    && cmake .. \
+        -DBUILD_ONLY="core;s3" \
+        -DCMAKE_BUILD_TYPE=Release \
+        # -DBUILD_SHARED_LIBS=OFF \
+        -DCUSTOM_MEMORY_MANAGEMENT=OFF \
+        -DENABLE_TESTING=OFF \
+        -DENABLE_UNITY_BUILD=ON && \
+    make && make install
+RUN cd / && rm -rf /tmp/aws-sdk-cpp
+
+## parquet_s3_fdw
+RUN cd /tmp \
+    && git clone  -b 'v0.3.0' https://github.com/pgspider/parquet_s3_fdw.git /tmp/parquet_s3_fdw \
+    && cd /tmp/parquet_s3_fdw \
+    make install USE_PGXS=1
+RUN cd / && rm -rf /tmp/parquet_s3_fdw
+
+# kafka_fdw
+RUN cd /tmp \
+    && git clone  https://github.com/adjust/kafka_fdw.git /tmp/kafka_fdw \
+    && cd /tmp/kafka_fdw \
+    make && make install
+RUN cd / && rm -rf /tmp/kafka_fdw
+
+# 安装python包
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir wheel
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir requests
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir python-snappy
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir crc32c
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir lz4
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir kafka-python
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir redis
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir clickhouse_driver
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir pika
+RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir boto3
+
+# 从别处赋值过来的扩展
 COPY --from=build_jieba /usr/local/lib/postgresql/pg_jieba.so /usr/local/lib/postgresql/pg_jieba.so 
 COPY --from=build_jieba /usr/local/share/postgresql/extension/pg_jieba.control /usr/local/share/postgresql/extension/pg_jieba.control
 COPY --from=build_jieba /usr/local/share/postgresql/extension/pg_jieba--1.1.1.sql /usr/local/share/postgresql/extension/pg_jieba--1.1.1.sql
@@ -115,32 +176,13 @@ COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/plpython3u
 COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/plpython3u--unpackaged--1.0.sql  /usr/local/share/postgresql/extension/plpython3u--unpackaged--1.0.sql
 COPY  --from=postgres:12-alpine /usr/local/share/postgresql/extension/plpython3u.control  /usr/local/share/postgresql/extension/plpython3u.control
 
-# 提前加载
+# 扩展启动加载
 COPY docker-entrypoint-initdb.d.src/create-extension-postgis.sql /docker-entrypoint-initdb.d/00-create-extension-postgis.sql
 COPY docker-entrypoint-initdb.d.src/create-extension-age.sql /docker-entrypoint-initdb.d/00-create-extension-age.sql
 COPY docker-entrypoint-initdb.d.src/create-extension-jieba.sql /docker-entrypoint-initdb.d/00-create-extension-jieba.sql
 COPY docker-entrypoint-initdb.d.src/create-extension-py.sql  /docker-entrypoint-initdb.d/00-create-extension-py.sql
-
-RUN set -ex \
-    && apk add --no-cache \
-    snappy-dev \
-    python3-dev \
-    py3-pip \
-    cython \
-    py3-numpy \
-    py3-pandas \
-    py3-apache-arrow
-
-RUN python3 -m pip install --no-cache-dir wheel
-RUN python3 -m pip install --no-cache-dir requests
-RUN python3 -m pip install --no-cache-dir python-snappy
-RUN python3 -m pip install --no-cache-dir crc32c
-RUN python3 -m pip install --no-cache-dir lz4
-RUN python3 -m pip install --no-cache-dir kafka-python
-RUN python3 -m pip install --no-cache-dir redis
-RUN python3 -m pip install --no-cache-dir clickhouse_driver
-RUN python3 -m pip install --no-cache-dir pika
-RUN python3 -m pip install --no-cache-dir boto3
+COPY docker-entrypoint-initdb.d.src/create-extension-parquet_s3_fdw.sql  /docker-entrypoint-initdb.d/00-create-extension-parquet_s3_fdw.sql
+COPY docker-entrypoint-initdb.d.src/create-extension-kafka_fdw.sql  /docker-entrypoint-initdb.d/00-create-extension-kafka_fdw.sql
 
 RUN mkdir /tmp/stat_temporary
 RUN chmod 777 -R /tmp/stat_temporary

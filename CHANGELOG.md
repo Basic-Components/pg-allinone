@@ -1,3 +1,10 @@
+# pg12-0.0.5
+
+## 增加fdw
+
++ parquet_s3_fdw
++ kafka_fdw
+
 # pg12-0.0.4
 
 1. 0.0.4版本的pg12版,相比pg11版多出对parquet的支持

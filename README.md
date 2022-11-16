@@ -1,7 +1,7 @@
 # pg-allinone
 
 + author: hsz
-+ version: pg12-0.0.4
++ version: pg12-0.0.5
 
 安装了各种实用插件的pg镜像.该项目针对oltp场景,只考虑单节点和主备高可用部署场景
 
@@ -37,6 +37,15 @@
     + pika
     + pyarrow
     + boto3
+
++ [parquet_s3_fdw](https://github.com/pgspider/parquet_s3_fdw)用于作为s3上的parquet文件的只读sql引擎
++ [kafka_fdw](https://github.com/adjust/kafka_fdw)用于将kafka中的数据作为源使用,主要用于调试
+
+## 测试特性
+
+tests文件夹提供了供测试使用的SQL脚本和进入容器的语句.
+
+
 
 ## 使用与场景
 
@@ -78,3 +87,10 @@ HTAP场景下依然建议悠着点使用,不用盲目上集群.HTAP场景下更�
 ## OLAP
 
 暂无支持
+
+
+s3 = boto3.client('s3',
+                  endpoint_url='http://localhost:9000',
+                  aws_access_key_id='admin',
+                  aws_secret_access_key='admin1234',
+                  region_name='us-east-1')
