@@ -21,16 +21,11 @@ RUN cmake ..
 RUN make
 RUN make install
 
-
-
 ############################
 # Now build image and copy in tools
 ############################
-FROM --platform=$TARGETPLATFORM timescale/timescaledb:2.8.1-pg12
-ARG POSTGIS_VERSION=3.3.1
+FROM --platform=$TARGETPLATFORM timescale/timescaledb:2.8.1-pg12 as build
 
-# 安装依赖
-ENV POSTGIS_VERSION ${POSTGIS_VERSION}
 RUN set -ex \
     && apk add --no-cache \
     ca-certificates \
@@ -83,21 +78,6 @@ RUN set -ex \
 # git设置
 RUN git config --global http.version HTTP/1.1
 
-# postgis
-RUN cd /tmp \
-    && wget http://download.osgeo.org/postgis/source/postgis-${POSTGIS_VERSION}.tar.gz -O - | tar -xz \
-    && chown root:root -R postgis-${POSTGIS_VERSION} \
-    && cd /tmp/postgis-${POSTGIS_VERSION} \
-    && ./configure \
-    && echo "PERL = /usr/bin/perl" >> extensions/postgis/Makefile \
-    && echo "PERL = /usr/bin/perl" >> extensions/postgis_topology/Makefile \
-    && make -s \
-    && make -s install \
-    && apk add --no-cache --virtual .postgis-rundeps \
-    json-c \
-    && cd / \
-    && rm -rf /tmp/postgis-${POSTGIS_VERSION}
-
 # age
 RUN cd /tmp \
     # && git clone -b 'release/0.7.0' https://github.com/apache/incubator-age /tmp/age \
@@ -119,23 +99,94 @@ RUN cd /tmp \
         # -DBUILD_SHARED_LIBS=OFF \
         -DCUSTOM_MEMORY_MANAGEMENT=OFF \
         -DENABLE_TESTING=OFF \
-        -DENABLE_UNITY_BUILD=ON && \
-    make && make install
+        -DENABLE_UNITY_BUILD=ON \
+    && make && make install
 RUN cd / && rm -rf /tmp/aws-sdk-cpp
 
 ## parquet_s3_fdw
 RUN cd /tmp \
     && git clone  -b 'v0.3.0' https://github.com/pgspider/parquet_s3_fdw.git /tmp/parquet_s3_fdw \
     && cd /tmp/parquet_s3_fdw \
-    make install USE_PGXS=1
+    && make install USE_PGXS=1
 RUN cd / && rm -rf /tmp/parquet_s3_fdw
 
 # kafka_fdw
 RUN cd /tmp \
     && git clone  https://github.com/adjust/kafka_fdw.git /tmp/kafka_fdw \
     && cd /tmp/kafka_fdw \
-    make && make install
+    && make \
+    && make install
 RUN cd / && rm -rf /tmp/kafka_fdw
+
+############################
+# 安装 postgis 并打包,postgis生成的文件太多一个个复制太麻烦
+############################
+FROM --platform=$TARGETPLATFORM timescale/timescaledb:2.8.1-pg12
+ARG POSTGIS_VERSION=3.3.1
+
+# 安装依赖
+ENV POSTGIS_VERSION ${POSTGIS_VERSION}
+RUN set -ex \
+    && apk add --no-cache \
+    ca-certificates \
+    openssl-dev \
+    openssl \
+    tar \
+    bison \
+    flex \
+    llvm \
+    snappy-dev \
+    apache-arrow-dev \
+    librdkafka-dev \
+    python3 \
+    python3-dev \
+    py3-pip \
+    cython \
+    py3-numpy \
+    py3-pandas \
+    py3-apache-arrow \
+    curl-dev \
+    zlib-dev \
+    nghttp2-static \
+    boost-dev
+
+RUN set -ex \
+    && apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/v3.12/main \
+    postgresql-dev
+
+RUN set -ex \
+    && apk add --no-cache --repository http://nl.alpinelinux.org/alpine/v3.14/main \
+    geos \
+    gdal \
+    proj \
+    protobuf-c \
+    perl \
+    file \
+    geos-dev \
+    libxml2-dev \
+    gdal-dev \
+    proj-dev \
+    protobuf-c-dev \
+    json-c-dev \
+    libstdc++ \
+    pcre \
+    gcc g++ \
+    make
+
+# postgis
+RUN cd /tmp \
+    && wget http://download.osgeo.org/postgis/source/postgis-${POSTGIS_VERSION}.tar.gz -O - | tar -xz \
+    && chown root:root -R postgis-${POSTGIS_VERSION} \
+    && cd /tmp/postgis-${POSTGIS_VERSION} \
+    && ./configure \
+    && echo "PERL = /usr/bin/perl" >> extensions/postgis/Makefile \
+    && echo "PERL = /usr/bin/perl" >> extensions/postgis_topology/Makefile \
+    && make -s \
+    && make -s install \
+    && apk add --no-cache --virtual .postgis-rundeps \
+    json-c \
+    && cd / \
+    && rm -rf /tmp/postgis-${POSTGIS_VERSION}
 
 # 安装python包
 RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir wheel
@@ -150,6 +201,7 @@ RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cach
 RUN python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir boto3
 
 # 从别处赋值过来的扩展
+## jieba
 COPY --from=build_jieba /usr/local/lib/postgresql/pg_jieba.so /usr/local/lib/postgresql/pg_jieba.so 
 COPY --from=build_jieba /usr/local/share/postgresql/extension/pg_jieba.control /usr/local/share/postgresql/extension/pg_jieba.control
 COPY --from=build_jieba /usr/local/share/postgresql/extension/pg_jieba--1.1.1.sql /usr/local/share/postgresql/extension/pg_jieba--1.1.1.sql
@@ -158,7 +210,7 @@ COPY --from=build_jieba /usr/local/share/postgresql/tsearch_data/jieba.stop /usr
 COPY --from=build_jieba /usr/local/share/postgresql/tsearch_data/jieba_base.dict /usr/local/share/postgresql/tsearch_data/jieba_base.dict
 COPY --from=build_jieba /usr/local/share/postgresql/tsearch_data/jieba_hmm.model /usr/local/share/postgresql/tsearch_data/jieba_hmm.model
 COPY --from=build_jieba /usr/local/share/postgresql/tsearch_data/jieba_user.dict /usr/local/share/postgresql/tsearch_data/jieba_user.dict
-
+## python
 COPY  --from=postgres:12.11-alpine3.16 /usr/local/lib/postgresql/hstore_plpython3.so /usr/local/lib/postgresql/hstore_plpython3.so
 COPY  --from=postgres:12.11-alpine3.16 /usr/local/share/postgresql/extension/hstore_plpython3u--1.0.sql  /usr/local/share/postgresql/extension/hstore_plpython3u--1.0.sql
 COPY  --from=postgres:12.11-alpine3.16 /usr/local/share/postgresql/extension/hstore_plpython3u.control  /usr/local/share/postgresql/extension/hstore_plpython3u.control
@@ -175,6 +227,31 @@ COPY  --from=postgres:12.11-alpine3.16 /usr/local/lib/postgresql/plpython3.so /u
 COPY  --from=postgres:12.11-alpine3.16 /usr/local/share/postgresql/extension/plpython3u--1.0.sql  /usr/local/share/postgresql/extension/plpython3u--1.0.sql
 COPY  --from=postgres:12.11-alpine3.16 /usr/local/share/postgresql/extension/plpython3u--unpackaged--1.0.sql  /usr/local/share/postgresql/extension/plpython3u--unpackaged--1.0.sql
 COPY  --from=postgres:12.11-alpine3.16 /usr/local/share/postgresql/extension/plpython3u.control  /usr/local/share/postgresql/extension/plpython3u.control
+
+## age
+COPY  --from=build /usr/local/lib/postgresql/age.so /usr/local/lib/postgresql/age.so
+COPY  --from=build /usr/local/share/postgresql/extension/age--1.1.0.sql /usr/local/share/postgresql/extension/age--1.1.0.sql
+COPY  --from=build /usr/local/share/postgresql/extension/age.control /usr/local/share/postgresql/extension/age.control
+
+## parquet_s3_fdw
+### aws
+COPY  --from=build /usr/local/lib/libaws-cpp-sdk-core.so /usr/local/lib/libaws-cpp-sdk-core.so
+COPY  --from=build /usr/local/lib/libaws-cpp-sdk-s3.so /usr/local/lib/libaws-cpp-sdk-s3.so 
+### parquet_s3_fdw
+COPY  --from=build /usr/local/lib/postgresql/parquet_s3_fdw.so /usr/local/lib/postgresql/parquet_s3_fdw.so
+COPY  --from=build /usr/local/share/postgresql/extension/parquet_s3_fdw--0.1--0.2.sql /usr/local/share/postgresql/extension/parquet_s3_fdw--0.1--0.2.sql
+COPY  --from=build /usr/local/share/postgresql/extension/parquet_s3_fdw--0.1.sql /usr/local/share/postgresql/extension/parquet_s3_fdw--0.1.sql
+COPY  --from=build /usr/local/share/postgresql/extension/parquet_s3_fdw--0.2--0.3.sql /usr/local/share/postgresql/extension/parquet_s3_fdw--0.2--0.3.sql
+COPY  --from=build /usr/local/share/postgresql/extension/parquet_s3_fdw--0.3.sql /usr/local/share/postgresql/extension/parquet_s3_fdw--0.3.sql
+COPY  --from=build /usr/local/share/postgresql/extension/parquet_s3_fdw.control /usr/local/share/postgresql/extension/parquet_s3_fdw.control
+
+## kafka_fdw
+COPY  --from=build /usr/local/lib/postgresql/kafka_fdw.so /usr/local/lib/postgresql/kafka_fdw.so
+COPY  --from=build /usr/local/share/postgresql/extension/kafka_fdw--0.0.1--0.0.2.sql /usr/local/share/postgresql/extension/kafka_fdw--0.0.1--0.0.2.sql
+COPY  --from=build /usr/local/share/postgresql/extension/kafka_fdw--0.0.1.sql /usr/local/share/postgresql/extension/kafka_fdw--0.0.1.sql
+COPY  --from=build /usr/local/share/postgresql/extension/kafka_fdw--0.0.2--0.0.3.sql /usr/local/share/postgresql/extension/kafka_fdw--0.0.2--0.0.3.sql
+COPY  --from=build /usr/local/share/postgresql/extension/kafka_fdw--0.0.3.sql /usr/local/share/postgresql/extension/kafka_fdw--0.0.3.sql
+COPY  --from=build /usr/local/share/postgresql/extension/kafka_fdw.control /usr/local/share/postgresql/extension/kafka_fdw.control
 
 # 扩展启动加载
 COPY docker-entrypoint-initdb.d.src/create-extension-postgis.sql /docker-entrypoint-initdb.d/00-create-extension-postgis.sql
