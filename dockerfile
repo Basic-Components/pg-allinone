@@ -87,6 +87,14 @@ RUN cd /tmp \
 # COPY /tmp/age/docker-entrypoint-initdb.d/00-create-extension-age.sql /docker-entrypoint-initdb.d/00-create-extension-age.sql
 RUN cd / && rm -rf /tmp/age
 
+# kafka_fdw
+RUN cd /tmp \
+    && git clone  https://github.com/adjust/kafka_fdw.git /tmp/kafka_fdw \
+    && cd /tmp/kafka_fdw \
+    && make \
+    && make install
+RUN cd / && rm -rf /tmp/kafka_fdw
+
 # parquet_s3_fdw
 ## aws 1.9.334可以测
 RUN cd /tmp \
@@ -105,18 +113,13 @@ RUN cd / && rm -rf /tmp/aws-sdk-cpp
 
 ## parquet_s3_fdw
 RUN cd /tmp \
-    && git clone  -b 'v0.3.0' https://github.com/pgspider/parquet_s3_fdw.git /tmp/parquet_s3_fdw \
+    # && git clone  -b 'v0.3.0' https://github.com/pgspider/parquet_s3_fdw.git /tmp/parquet_s3_fdw \
+    && git clone  https://github.com/Basic-Components/parquet_s3_fdw.git /tmp/parquet_s3_fdw \
     && cd /tmp/parquet_s3_fdw \
     && make install USE_PGXS=1
 RUN cd / && rm -rf /tmp/parquet_s3_fdw
 
-# kafka_fdw
-RUN cd /tmp \
-    && git clone  https://github.com/adjust/kafka_fdw.git /tmp/kafka_fdw \
-    && cd /tmp/kafka_fdw \
-    && make \
-    && make install
-RUN cd / && rm -rf /tmp/kafka_fdw
+
 
 ############################
 # 安装 postgis 并打包,postgis生成的文件太多一个个复制太麻烦
