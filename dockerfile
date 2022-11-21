@@ -80,7 +80,6 @@ RUN git config --global http.version HTTP/1.1
 
 # age
 RUN cd /tmp \
-    # && git clone -b 'release/0.7.0' https://github.com/apache/incubator-age /tmp/age \
     && git clone -b 'PG12/v1.1.0-rc0' https://github.com/apache/age.git /tmp/age \
     && cd /tmp/age \
     && make install
