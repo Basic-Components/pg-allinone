@@ -2,7 +2,6 @@
 
 ## 增加fdw
 
-+ parquet_s3_fdw
 + kafka_fdw
 
 # pg11-0.0.4
